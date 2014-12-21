@@ -64,6 +64,7 @@ func (router Router) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 // route.
 func routeRequest(route *Route, pathSegments []string) *Route {
 	var nextRoute *Route
+
 	// Search for a static route, if we can't find one, search for a dynamic
 	// route.
 	nextRoute = route.GetRoute(pathSegments[0])
@@ -72,15 +73,16 @@ func routeRequest(route *Route, pathSegments []string) *Route {
 	}
 
 	if nextRoute != nil {
-
+		// Route matched, so let's return it!
 		if len(pathSegments) == 1 {
 			return nextRoute
 		}
 
+		// Let's keep searching.
 		return routeRequest(nextRoute, pathSegments[1:])
 	}
 
-	// Could not find a valid route.  Return an Empty Route.
+	// We couldn't find a valid route.  Return an Empty Route.
 	return new(Route)
 }
 
