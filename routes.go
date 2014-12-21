@@ -7,7 +7,7 @@ type Route struct {
 	handler  GoAppHandlerFunc
 }
 
-// NewRoute returns an initialized Route
+// NewRoute constructs and returns an initialized Route.
 func NewRoute(id string) *Route {
 	route := new(Route)
 
@@ -17,7 +17,8 @@ func NewRoute(id string) *Route {
 	return route
 }
 
-// AddRoute inserts a child route
+// AddRoute creates a new route and adds a child node if the provided segment
+// has not already been added.
 func (route *Route) AddRoute(segment string) *Route {
 	if _, ok := route.children[segment]; ok {
 		return nil
@@ -28,7 +29,8 @@ func (route *Route) AddRoute(segment string) *Route {
 	return route.children[segment]
 }
 
-// GetRoute retrieves child route
+// GetRoute searches child nodes for the provided segment and returns the
+// associated route or nil.
 func (route *Route) GetRoute(segment string) *Route {
 	if _, ok := route.children[segment]; ok {
 		return route.children[segment]
@@ -37,21 +39,12 @@ func (route *Route) GetRoute(segment string) *Route {
 	return nil
 }
 
-// HasRoute tests if child route exists
-func (route *Route) HasRoute(segment string) bool {
-	if _, ok := route.children[segment]; ok {
-		return true
-	}
-
-	return false
-}
-
-// SetHandler is a setter for route.handler
+// SetHandler is a setter for route.handler.
 func (route *Route) SetHandler(handler GoAppHandlerFunc) {
 	route.handler = handler
 }
 
-// Handler is a getter for route.handler
+// Handler is a getter for route.handler.
 func (route *Route) Handler() GoAppHandlerFunc {
 	return route.handler
 }

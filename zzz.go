@@ -13,7 +13,7 @@ type GoApp struct {
 	httpServer http.Server
 }
 
-// NewGoApp initializer
+// NewGoApp constructs and returns an initialized GoApp.
 func NewGoApp(port int) *GoApp {
 	app := new(GoApp)
 
@@ -25,7 +25,7 @@ func NewGoApp(port int) *GoApp {
 	return app
 }
 
-// Start will start up the built in HTTP Server
+// Start will start up the built in HTTP Server.
 func (app GoApp) Start() {
 	app.httpServer.ListenAndServe()
 }
