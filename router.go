@@ -60,10 +60,17 @@ func (router Router) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// routeRequest performs a lookup for a request and returns an appropriate route.
+// routeRequest performs a lookup for a request and returns an appropriate
+// route.
 func routeRequest(route *Route, pathSegments []string) *Route {
+	var nextRoute *Route
+	// Search for a static route, if we can't find one, search for a dynamic
+	// route.
+	nextRoute = route.GetRoute(pathSegments[0])
+	if nextRoute == nil {
+		nextRoute = route.GetRoute(":var")
+	}
 
-	nextRoute := route.GetRoute(pathSegments[0])
 	if nextRoute != nil {
 
 		if len(pathSegments) == 1 {
