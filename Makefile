@@ -2,6 +2,8 @@
 # Makefile Definitions #
 ########################
 GO ?= go
+MAKE ?= make
+DEMOPID = tmp/demo.pid
 
 #####################
 # Color Definitions #
@@ -24,14 +26,23 @@ dev-build: dev-clean
 
 dev-clean:
 	@echo "$(OK_COLOR)Cleaning Demo...$(NO_COLOR)"
+
+	@if [ -e $(DEMOPID) ]; \
+	then \
+		echo "$(OK_COLOR)Cleaning Up Demo Server...$(NO_COLOR)"; \
+		kill `cat $(DEMOPID)`; \
+	fi;
+
 	rm -rf tmp
 	@echo ""
 
 dev-run: dev-build
 	@echo "$(OK_COLOR)Starting Demo Server...$(NO_COLOR)"
-	@./tmp/demo & echo $$! > tmp/demo.pid
+
+	@./tmp/demo & echo $$! > $(DEMOPID)
 	@sleep 1
 	@echo ""
 	@read -p "Press any key to exit..."
 	@echo "$(OK_COLOR)Shutting Down Demo Server...$(NO_COLOR)"
-	@kill `cat tmp/demo.pid`
+	@kill `cat $(DEMOPID)`
+	@rm $(DEMOPID)
