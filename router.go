@@ -26,7 +26,7 @@ func (router Router) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	var host string
 	var route *Route
 
-	// Extract host information from request
+	// Get host information from request
 	hostInfo := strings.Split(req.Host, ":")
 	pathSegments := parseRoute(req.URL.String())
 	host = hostInfo[0]
@@ -43,7 +43,7 @@ func (router Router) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		route = new(Route)
 	}
 
-	handler := route.Handler()
+	handler := route.Handler(req.Method)
 
 	if handler != nil {
 		// Pass request to the appropriate handler.
@@ -101,12 +101,12 @@ func (router *Router) AddRoute(method string, route string, handler GoAppHandler
 		router.routes[segment] = NewRoute(segment)
 	}
 
-	recurseAddRoute(pathSegments[1:], router.routes[segment], handler)
+	recurseAddRoute(strings.ToUpper(method), pathSegments[1:], router.routes[segment], handler)
 }
 
 // recurseAddRoute adds a route to the routing table by recursively traversing
 // the routing table and extending the table.
-func recurseAddRoute(pathSegments []string, route *Route, handler GoAppHandlerFunc) {
+func recurseAddRoute(method string, pathSegments []string, route *Route, handler GoAppHandlerFunc) {
 	var nextRoute *Route
 
 	segment := pathSegments[0]
@@ -118,10 +118,10 @@ func recurseAddRoute(pathSegments []string, route *Route, handler GoAppHandlerFu
 
 	if len(pathSegments) > 1 {
 		// Continue recursion
-		recurseAddRoute(pathSegments[1:], nextRoute, handler)
+		recurseAddRoute(method, pathSegments[1:], nextRoute, handler)
 	} else {
 		// We have reached the end of the route, so we set the request handler.
-		nextRoute.SetHandler(handler)
+		nextRoute.SetHandler(method, handler)
 	}
 }
 

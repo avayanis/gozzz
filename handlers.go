@@ -7,15 +7,6 @@ import (
 // GoAppHandlerFunc extends http.Handle and adds a return parameter for errors.
 type GoAppHandlerFunc func(http.ResponseWriter, *http.Request) error
 
-// NotFoundRoute returns a Route with a 404 handler.
-func NotFoundRoute() *Route {
-	route := new(Route)
-
-	route.SetHandler(notFoundHandler)
-
-	return route
-}
-
 // notFoundHandler responds with a standard 404 Not Found response.
 func notFoundHandler(res http.ResponseWriter, req *http.Request) error {
 	http.Error(res, http.StatusText(404), 404)
