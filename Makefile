@@ -18,6 +18,9 @@ all: build
 build:
 	$(GO) build
 
+test:
+	$(GO) test
+
 dev-build: dev-clean
 	@echo "$(OK_COLOR)Building Demo Server...$(NO_COLOR)"
 	mkdir tmp
