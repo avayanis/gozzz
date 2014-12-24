@@ -1,4 +1,4 @@
-package gozzz
+package goz
 
 import (
 	"net/http"

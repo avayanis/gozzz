@@ -1,4 +1,4 @@
-package gozzz
+package goz
 
 import (
 	"strings"
@@ -6,9 +6,10 @@ import (
 
 // Route defines a child node in a routing table tree.
 type Route struct {
-	ID       string
-	children map[string]*Route
-	handlers map[string]GoAppHandlerFunc
+	ID          string
+	children    map[string]*Route
+	handlers    map[string]GoAppHandlerFunc
+	variableMap map[string]map[string]string
 }
 
 // NewRoute constructs and returns an initialized Route.
@@ -18,6 +19,7 @@ func NewRoute(id string) *Route {
 	route.ID = id
 	route.children = make(map[string]*Route)
 	route.handlers = make(map[string]GoAppHandlerFunc)
+	route.variableMap = make(map[string]map[string]string)
 
 	return route
 }
@@ -59,6 +61,20 @@ func (route *Route) SetHandler(method string, handler GoAppHandlerFunc) {
 func (route *Route) Handler(method string) GoAppHandlerFunc {
 	if _, ok := route.handlers[method]; ok {
 		return route.handlers[method]
+	}
+
+	return nil
+}
+
+// SetVariableMap is a setter for route.variableMap.
+func (route *Route) SetVariableMap(method string, variableMap map[string]string) {
+	route.variableMap[method] = variableMap
+}
+
+// VariableMap is a getter for route.variableMap.
+func (route *Route) VariableMap(method string) map[string]string {
+	if _, ok := route.variableMap[method]; ok {
+		return route.variableMap[method]
 	}
 
 	return nil

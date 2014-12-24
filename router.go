@@ -1,4 +1,4 @@
-package gozzz
+package goz
 
 import (
 	"net/http"
@@ -22,27 +22,29 @@ func NewRouter() *Router {
 
 // ServeHTTP implements the http.Handler interface and acts as the generic
 // entry to all incoming requests.
-func (router Router) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	var host string
-	var route *Route
+func (router Router) ServeHTTP(response http.ResponseWriter, request *http.Request) {
+	req := NewRequest(request)
+	res := NewResponseWriter(response)
 
 	// Get host information from request
-	hostInfo := strings.Split(req.Host, ":")
 	pathSegments := parseRoute(req.URL.String())
-	host = hostInfo[0]
 
 	// Find the correct routing table using the host string, and route the
 	// incoming request.
-	if _, ok := router.routes[host]; ok {
-		route = routeRequest(router.routes[host], pathSegments[1:])
+	var route *Route
+	var variableMap map[string]string
+	if _, ok := router.routes[req.host]; ok {
+		route, variableMap = routeRequest(NewPacket(router.routes[req.host], pathSegments[1:]))
 	} else if _, ok := router.routes["*"]; ok {
-		route = routeRequest(router.routes["*"], pathSegments[1:])
+		route, variableMap = routeRequest(NewPacket(router.routes["*"], pathSegments[1:]))
 	} else {
 		// Couldn't find a routing table for the requested host, so we create an
 		// empty route.
 		route = new(Route)
+		variableMap = nil
 	}
 
+	req.SetVariableMap(route.VariableMap(req.Method), variableMap)
 	handler := route.Handler(req.Method)
 
 	if handler != nil {
@@ -62,28 +64,45 @@ func (router Router) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 // routeRequest performs a lookup for a request and returns an appropriate
 // route.
-func routeRequest(route *Route, pathSegments []string) *Route {
+func routeRequest(packet *Packet) (*Route, map[string]string) {
 	var nextRoute *Route
 
 	// Search for a static route, if we can't find one, search for a dynamic
 	// route.
-	nextRoute = route.GetRoute(pathSegments[0])
+	nextRoute = packet.route.GetRoute(packet.segments[0])
 	if nextRoute == nil {
-		nextRoute = route.GetRoute(":var")
+		nextRoute = packet.route.GetRoute(":var")
+
+		if nextRoute != nil {
+			// Let's store the variable segment
+			packet.AddVariable()
+		}
 	}
 
 	if nextRoute != nil {
 		// Route matched, so let's return it!
-		if len(pathSegments) == 1 {
-			return nextRoute
+		if len(packet.segments) == 1 {
+			return nextRoute, packet.variableMap
 		}
 
 		// Let's keep searching.
-		return routeRequest(nextRoute, pathSegments[1:])
+		nextPacket := incrementPacket(nextRoute, packet)
+		return routeRequest(nextPacket)
 	}
 
 	// We couldn't find a valid route.  Return an Empty Route.
-	return new(Route)
+	return new(Route), nil
+}
+
+// incremenetPacket creates a new goz.Packet that represents the next pointer
+// in the routing table tree.
+func incrementPacket(nextRoute *Route, previousPacket *Packet) *Packet {
+	packet := NewPacket(nextRoute, previousPacket.segments[1:])
+
+	packet.index = previousPacket.index + 1
+	packet.variableMap = previousPacket.variableMap
+
+	return packet
 }
 
 // AddRoute adds a new route to the routing table.
@@ -101,27 +120,40 @@ func (router *Router) AddRoute(method string, route string, handler GoAppHandler
 		router.routes[segment] = NewRoute(segment)
 	}
 
-	recurseAddRoute(strings.ToUpper(method), pathSegments[1:], router.routes[segment], handler)
+	packet := NewPacket(router.routes[segment], pathSegments[1:])
+	recurseAddRoute(strings.ToUpper(method), packet, handler)
 }
 
 // recurseAddRoute adds a route to the routing table by recursively traversing
 // the routing table and extending the table.
-func recurseAddRoute(method string, pathSegments []string, route *Route, handler GoAppHandlerFunc) {
+func recurseAddRoute(method string, packet *Packet, handler GoAppHandlerFunc) {
 	var nextRoute *Route
 
-	segment := pathSegments[0]
-	nextRoute = route.GetRoute(segment)
+	segment := packet.segments[0]
 
-	if nextRoute == nil {
-		nextRoute = route.AddRoute(segment)
+	if strings.HasPrefix(segment, ":") {
+		segment = ":var"
+		packet.AddVariable()
 	}
 
-	if len(pathSegments) > 1 {
+	nextRoute = packet.route.GetRoute(segment)
+
+	if nextRoute == nil {
+		nextRoute = packet.route.AddRoute(segment)
+	}
+
+	if len(packet.segments) > 1 {
+		// Prepare next routing packet
+		nextPacket := NewPacket(nextRoute, packet.segments[1:])
+		nextPacket.index = packet.index + 1
+		nextPacket.variableMap = packet.variableMap
+
 		// Continue recursion
-		recurseAddRoute(method, pathSegments[1:], nextRoute, handler)
+		recurseAddRoute(method, nextPacket, handler)
 	} else {
 		// We have reached the end of the route, so we set the request handler.
 		nextRoute.SetHandler(method, handler)
+		nextRoute.SetVariableMap(method, packet.variableMap)
 	}
 }
 
