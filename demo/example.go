@@ -22,7 +22,7 @@ func main() {
 	})
 
 	app.Post("/foo", func(response *goz.ResponseWriter, request *goz.Request) error {
-		response.Write([]byte("You posted to me boo!"))
+		response.Write([]byte("You posted to me!"))
 
 		return nil
 	})
