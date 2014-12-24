@@ -3,7 +3,7 @@
 GoZzz is a Lightweight REST Framework for Golang - It is a port from a similar
 framework [Zzz](https://github.com/avayanis/zzz).
 
-[![Build Status](https://travis-ci.org/avayanis/GoZzz.svg)](https://travis-ci.org/avayanis/GoZzz)
+[![Build Status](https://travis-ci.org/avayanis/gozzz.svg)](https://travis-ci.org/avayanis/gozzz)
 
 ## Installation
 ```bash
