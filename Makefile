@@ -30,7 +30,7 @@ dev-clean:
 	@if [ -e $(DEMOPID) ]; \
 	then \
 		echo "$(OK_COLOR)Cleaning Up Demo Server...$(NO_COLOR)"; \
-		kill `cat $(DEMOPID)`; \
+		kill `cat $(DEMOPID)` || true; \
 	fi;
 
 	rm -rf tmp
