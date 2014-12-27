@@ -24,7 +24,7 @@ func NewRouter() *Router {
 // entry to all incoming requests.
 func (router Router) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	req := NewRequest(request)
-	res := NewResponseWriter(response)
+	res := NewResponse(response)
 
 	// Get host information from request
 	pathSegments := parseRoute(req.URL.String())
