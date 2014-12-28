@@ -23,6 +23,7 @@ func NewResponse(writer http.ResponseWriter) *Response {
 	return response
 }
 
+// Error is an alias to http.Error
 func (res *Response) Error(code int) {
 	http.Error(res, http.StatusText(code), code)
 }
