@@ -19,7 +19,17 @@ build:
 	$(GO) build
 
 test:
+	@echo "$(OK_COLOR)Running unit tests...$(NO_COLOR)"
 	$(GO) test
+
+test-coverage:
+	@echo "$(OK_COLOR)Generating code coverage report...$(NO_COLOR)"
+	$(GO) test -coverprofile=coverage.out github.com/avayanis/gozzz
+	$(GO) tool cover -html=coverage.out
+
+test-clean:
+	@echo "$(OK_COLOR)Cleaning up code coverage report...$(NO_COLOR)"
+	rm coverage.out
 
 dev-build: dev-clean
 	@echo "$(OK_COLOR)Building Demo Server...$(NO_COLOR)"
