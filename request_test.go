@@ -17,7 +17,7 @@ func TestNewRequest(t *testing.T) {
 	}
 }
 
-func TestSetVariableMap(t *testing.T) {
+func TestRequestSetVariableMap(t *testing.T) {
 	keys := make(map[string]string)
 	keys["0"] = ":testKey0"
 	keys["2"] = ":testKey2"
